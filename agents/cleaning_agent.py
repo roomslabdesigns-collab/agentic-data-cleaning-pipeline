@@ -6,12 +6,14 @@ def clean_data(
     plan
 ):
 
+    # Remove duplicates
     if plan.get(
         "remove_duplicates",
         False
     ):
         df = df.drop_duplicates()
 
+    # Missing value strategy
     strategy = plan.get(
         "missing_strategy",
         "median"
@@ -34,5 +36,21 @@ def clean_data(
         df[col] = df[col].fillna(
             value
         )
+
+    # Outlier handling
+    outlier_strategy = plan.get(
+        "outlier_strategy",
+        "none"
+    )
+
+    if outlier_strategy == "remove":
+
+        if "Age" in df.columns:
+
+            df = df[
+                (df["Age"] >= 0)
+                &
+                (df["Age"] <= 120)
+            ]
 
     return df

@@ -20,7 +20,8 @@ Example:
 
 {{
     "remove_duplicates": true,
-    "missing_strategy": "median"
+    "missing_strategy": "median",
+    "outlier_strategy": "remove"
 }}
 
 Profile:
@@ -48,5 +49,6 @@ Profile:
 
         return {
             "remove_duplicates": True,
-            "missing_strategy": "median"
+            "missing_strategy": "median",
+            "outlier_strategy": "remove"
         }

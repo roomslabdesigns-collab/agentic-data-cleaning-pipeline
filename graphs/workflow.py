@@ -50,12 +50,11 @@ def planning_node(state):
     }
 
 
-# CLEANING NODE
 def cleaning_node(state):
 
     cleaned_df = clean_data(
-    state["df"],
-    state["plan"]
+        state["df"],
+        state["plan"]
     )
 
     return {
