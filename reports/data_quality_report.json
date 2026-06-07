@@ -1,0 +1,13 @@
+{
+    "original_rows": 6,
+    "cleaned_rows": 4,
+    "quality_score": 66.67,
+    "duplicates_found": 1,
+    "missing_values": {
+        "Name": 0,
+        "Age": 1,
+        "Gender": 0,
+        "Salary": 1
+    },
+    "validation_issues": []
+}

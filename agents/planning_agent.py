@@ -21,7 +21,8 @@ Example:
 {{
     "remove_duplicates": true,
     "missing_strategy": "median",
-    "outlier_strategy": "remove"
+    "outlier_strategy": "remove",
+    "standardize_categories": true
 }}
 
 Profile:
@@ -50,5 +51,6 @@ Profile:
         return {
             "remove_duplicates": True,
             "missing_strategy": "median",
-            "outlier_strategy": "remove"
+            "outlier_strategy": "remove",
+            "standardize_categories": True
         }

@@ -1,0 +1,2 @@
+original_rows,cleaned_rows,quality_score,duplicates_found,missing_values,validation_issues
+6,4,66.67,1,"{'Name': 0, 'Age': 1, 'Gender': 0, 'Salary': 1}",[]

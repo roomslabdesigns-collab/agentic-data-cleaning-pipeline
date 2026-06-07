@@ -53,4 +53,27 @@ def clean_data(
                 (df["Age"] <= 120)
             ]
 
+    # Category standardization
+    if plan.get(
+        "standardize_categories",
+        False
+    ):
+
+        if "Gender" in df.columns:
+
+            gender_map = {
+                "m": "Male",
+                "male": "Male",
+                "f": "Female",
+                "female": "Female"
+            }
+
+            df["Gender"] = (
+                df["Gender"]
+                .astype(str)
+                .str.lower()
+                .map(gender_map)
+                .fillna(df["Gender"])
+            )
+
     return df
