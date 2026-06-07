@@ -1,22 +1,38 @@
 import pandas as pd
 
 
-def clean_data(df):
+def clean_data(
+    df,
+    plan
+):
 
-    # Remove duplicates
-    df = df.drop_duplicates()
+    if plan.get(
+        "remove_duplicates",
+        False
+    ):
+        df = df.drop_duplicates()
 
-    # Fill missing numeric values
+    strategy = plan.get(
+        "missing_strategy",
+        "median"
+    )
+
     numeric_cols = df.select_dtypes(
         include=["number"]
     ).columns
 
     for col in numeric_cols:
 
-        median_value = df[col].median()
+        if strategy == "mean":
+
+            value = df[col].mean()
+
+        else:
+
+            value = df[col].median()
 
         df[col] = df[col].fillna(
-            median_value
+            value
         )
 
     return df

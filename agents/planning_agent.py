@@ -11,16 +11,21 @@ client = Client(
 def create_cleaning_plan(profile):
 
     prompt = f"""
-You are a data quality expert.
+You are a data cleaning expert.
 
-Based on the profiling report,
-create a cleaning plan.
+Based on the dataset profile below,
+return ONLY valid JSON.
 
-Profiling Report:
+Example:
+
+{{
+    "remove_duplicates": true,
+    "missing_strategy": "median"
+}}
+
+Profile:
 
 {json.dumps(profile, indent=2)}
-
-Return only the cleaning actions.
 """
 
     response = client.chat(
@@ -33,4 +38,15 @@ Return only the cleaning actions.
         ]
     )
 
-    return response["message"]["content"]
+    try:
+
+        return json.loads(
+            response["message"]["content"]
+        )
+
+    except:
+
+        return {
+            "remove_duplicates": True,
+            "missing_strategy": "median"
+        }

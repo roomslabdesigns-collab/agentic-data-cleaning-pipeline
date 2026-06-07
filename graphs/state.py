@@ -7,7 +7,7 @@ class AgentState(TypedDict):
 
     profile: dict
 
-    plan: str
+    plan: dict
 
     cleaned_df: object
 

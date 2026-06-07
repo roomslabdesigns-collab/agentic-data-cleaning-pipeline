@@ -1,18 +1,6 @@
 from ingestion.loader import load_data
 
-import sys
-import os
-
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
-    )
-)
-
 from graphs.workflow import graph
-from ingestion.loader import load_data
 
 
 df = load_data(
@@ -25,4 +13,8 @@ result = graph.invoke(
     }
 )
 
+print("\nPLAN:")
+print(result["plan"])
+
+print("\nREPORT:")
 print(result["report"])
