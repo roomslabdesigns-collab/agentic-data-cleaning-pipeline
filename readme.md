@@ -1,89 +1,266 @@
-# Agentic AI-Powered Data Cleaning Pipeline
+Github link : https://github.com/roomslabdesigns-collab/agentic-data-cleaning-pipeline
+Agentic AI Data Quality Platform
+What if cleaning a dataset wasn't a collection of preprocessing rules, but a system that could decide what the dataset needed?
+The Agentic AI Data Quality Platform is a multi-agent data cleaning system built to automate the journey from raw structured data to a validated, report-ready dataset. Instead of applying the same cleaning rules to every dataset, the system profiles the data first, uses an LLM-powered Planning Agent to decide which cleaning actions are needed, executes those decisions through a Cleaning Agent, validates the result, and generates a quality report.
+The current prototype supports CSV, Excel, and SQLite database sources and uses LangGraph to orchestrate the agents.
 
-**Agentic AI-Powered Data Cleaning Pipeline** is an agent-based data quality platform that automates the process of preparing structured datasets for analysis. Instead of relying only on fixed preprocessing rules, the system uses an LLM-powered **Planning Agent** to analyze the dataset profile and generate a cleaning strategy, which is then executed and validated by downstream agents.
+1. The Original Workflow
+Data cleaning is often handled as a sequence of manual preprocessing steps. A dataset is loaded, someone checks for missing values and duplicates, identifies unusual values, decides how to handle them, applies transformations, and finally checks whether the resulting dataset is still valid.
+The problem is that the same rules do not work equally well for every dataset. One dataset may need median imputation, another may require a different strategy, and categorical values can appear in inconsistent forms such as M, male, and MALE.
+A typical workflow therefore looks like:
+Raw Dataset
+     ↓
+Manual Inspection
+     ↓
+Write Cleaning Rules
+     ↓
+Run Preprocessing
+     ↓
+Check Results
+     ↓
+Generate Report
 
-The pipeline accepts data from **CSV files, Excel spreadsheets, and SQLite databases**. After ingestion, the **Profiling Agent** examines the dataset to identify missing values, duplicate records, data types, and potential quality issues. The **Planning Agent**, powered by Ollama and Qwen3 4B, converts this profile into a structured cleaning plan covering operations such as missing-value handling, duplicate removal, outlier treatment, and categorical standardization.
+The cleaning logic is usually fixed before the system understands the actual problems in the dataset.
 
-The generated plan is passed to the **Cleaning Agent**, which applies the selected transformations using Pandas. A **Validation Agent** then checks the resulting dataset for remaining quality issues. Finally, the **Report Agent** compares the original and cleaned datasets and generates machine-readable **JSON and CSV reports** containing cleaning results and quality metrics.
+2. The Friction Points
+Friction
+Root Cause
+Impact
+Fixed cleaning rules
+Cleaning logic is written before the dataset is fully understood
+The same strategy gets applied even when the data requires something different
+Manual data profiling
+Missing values, duplicates, types, and unusual values must be inspected separately
+Data preparation becomes repetitive
+Cleaning and decision-making are coupled
+The code decides both what should happen and how it happens
+Changing the cleaning strategy requires changing the implementation
+Different input formats
+CSV, Excel, and databases require different ingestion logic
+Data engineers spend time preparing data before cleaning can begin
+Validation happens at the end
+Problems are often discovered only after cleaning
+Incorrect transformations can go unnoticed
 
-The workflow is orchestrated using **LangGraph**, creating a clear separation between analysis, decision-making, execution, validation, and reporting. This design demonstrates how LLMs can be used as a decision layer within traditional data engineering and preprocessing workflows rather than directly modifying data without validation.
 
-### Architecture
+3. Prerequisites
+1. A reliable dataset profile
+The system needs to understand the dataset before making cleaning decisions. The Profiling Agent therefore identifies data types, missing values, duplicate records, and other quality information before planning begins.
+2. A structured cleaning plan
+The Cleaning Agent should not blindly apply every available rule. The Planning Agent needs to produce an explicit plan describing which operations should be performed.
+3. Validation after cleaning
+A dataset should not be considered clean simply because preprocessing completed successfully. The result needs to be checked for remaining quality problems.
 
-```text
+4. The AI-Enabled Redesign
+The redesigned workflow separates decision-making from execution.
+1. Ingest
+The system accepts structured data from CSV files, Excel spreadsheets, or SQLite databases.
+2. Profile
+The Profiling Agent analyzes the dataset and produces a structured quality profile containing information such as:
+Number of rows and columns
+Data types
+Missing values
+Duplicate records
+3. Plan
+The LLM-powered Planning Agent receives the profile and generates a structured cleaning plan.
+For example:
+{
+    "remove_duplicates": true,
+    "missing_strategy": "median",
+    "outlier_strategy": "remove",
+    "standardize_categories": true
+}
+
+4. Execute
+The Cleaning Agent reads the generated plan and executes the selected operations.
+This is an important architectural decision: the Cleaning Agent does not independently decide what to clean. It executes the plan generated by the Planning Agent.
+5. Validate
+The Validation Agent checks the cleaned dataset for remaining data-quality problems.
+6. Report
+The Report Agent generates a structured quality report containing cleaning results, validation issues, and a quality score. Reports are exported as JSON and CSV.
+
+5. Agent Workflow
 CSV / Excel / SQLite
         │
         ▼
-  Data Ingestion
+Data Ingestion
         │
         ▼
-  Profiling Agent
-        │
-        │  Dataset profile
-        ▼
-  Planning Agent
-  (Ollama + Qwen3 4B)
-        │
-        │  Cleaning plan
-        ▼
-  Cleaning Agent
-        │
-        ├── Missing Values
-        ├── Duplicates
-        ├── Outliers
-        └── Categories
+Profiling Agent
         │
         ▼
-  Validation Agent
+Planning Agent
+   LLM Decision
         │
         ▼
-   Report Agent
+Cleaning Agent
+   Executes Plan
+        │
+        ▼
+Validation Agent
+        │
+        ▼
+Report Agent
         │
         ├── JSON Report
         └── CSV Report
-        │
-        ▼
-   Cleaned Dataset
-```
 
-### Key Features
+The key design choice is the connection between the Planning Agent and Cleaning Agent:
+Profile
+   ↓
+AI-generated Plan
+   ↓
+Cleaning Agent
+   ↓
+Validated Dataset
 
-**Agent-Based Data Quality Workflow**
+The AI is therefore involved in deciding what actions should be taken, rather than simply generating a natural-language explanation of the data.
 
-* Dataset profiling and quality assessment
-* LLM-generated cleaning strategy
-* Automated execution of the generated plan
-* Post-cleaning validation
-* Structured quality reporting
+6. Example: From Raw Data to Clean Data
+The initial dataset contained:
+Name    Age    Gender    Salary
 
-**Data Ingestion**
+John    25     M         50000
+John    25     M         50000
+Sarah   NaN    Female    60000
+Mike    150    male      70000
+Alice   30     MALE      NaN
+Bob     28     Female    55000
 
-* CSV files
-* Excel spreadsheets
-* SQLite databases
+The Profiling Agent identified:
+Rows: 6
+Columns: 4
+Duplicates: 1
+Missing Age values: 1
+Missing Salary values: 1
 
-**Data Cleaning**
+The Planning Agent generated:
+Remove duplicates       → True
+Missing strategy        → Median
+Outlier strategy        → Remove
+Category standardize    → True
 
-* Missing-value handling
-* Duplicate removal
-* Outlier handling
-* Categorical value standardization
+The Cleaning Agent then executed those decisions.
+The result was:
+Original rows: 6
+Cleaned rows: 4
+Duplicates found: 1
+Validation issues: []
+Quality score: 66.67
 
-**Validation & Reporting**
+The important part is not the particular score. The important part is that the cleaning behavior was controlled by the AI-generated plan and then checked by a separate validation stage.
 
-* Validation of the cleaned dataset
-* Original vs. cleaned dataset comparison
-* JSON quality reports
-* CSV quality reports
-* Dataset quality metrics
+7. Sample AI Prompt
+Planning Agent
+You are a data cleaning expert.
 
-### Technology Stack
+Based on the dataset profile below,
+return ONLY valid JSON.
 
-* **Python** — Core implementation
-* **Pandas** — Data processing and transformation
-* **LangGraph** — Agent workflow orchestration
-* **Ollama** — Local LLM inference
-* **Qwen3 4B** — Planning Agent
-* **SQLite** — Database ingestion
-* **OpenPyXL** — Excel processing
-* **NumPy** — Numerical operations
+Example:
+
+{
+    "remove_duplicates": true,
+    "missing_strategy": "median",
+    "outlier_strategy": "remove",
+    "standardize_categories": true
+}
+
+Profile:
+
+{dataset profile}
+
+The model is instructed to return a structured plan rather than a natural-language recommendation.
+This makes the output usable by the downstream Cleaning Agent.
+
+8. Validation
+The system does not assume that successful execution means successful cleaning.
+After the Cleaning Agent finishes, the Validation Agent checks the resulting dataset.
+For example, the original dataset contained an invalid age value:
+Age = 150
+
+The Planning Agent selected:
+outlier_strategy = remove
+
+The Cleaning Agent removed the invalid record, and the Validation Agent subsequently returned:
+[]
+
+meaning no remaining validation issues were detected by the implemented checks.
+
+9. Business Impact
+The current project is a functional prototype, so production performance metrics have not been measured. The value of the system is therefore best described through capabilities rather than invented percentage improvements.
+Capability
+Before
+With the Platform
+Dataset inspection
+Manual profiling
+Automated profiling agent
+Cleaning decisions
+Hard-coded rules
+LLM-generated cleaning plan
+Cleaning execution
+Manually defined operations
+Plan-driven cleaning agent
+Validation
+Manual or separate checks
+Dedicated validation agent
+Reporting
+Manual summary
+Automated JSON/CSV reports
+Data sources
+Separate loaders
+Unified CSV, Excel, and SQLite ingestion
+
+
+10. Product Thinking — Risks & Tradeoffs
+Risk: The LLM may generate an incorrect cleaning plan
+A planning model can misunderstand the dataset or select an unsuitable strategy.
+Mitigation: The generated plan is constrained to structured JSON, and the resulting dataset is passed through a separate validation stage.
+Risk: Removing data can cause information loss
+An outlier may be an actual observation rather than an error.
+Tradeoff: The current prototype uses explicit cleaning strategies such as removing invalid age values. A production system would need configurable thresholds and human review for higher-risk transformations.
+Risk: The quality score can be misleading
+The current quality score is based on the proportion of remaining rows after cleaning. A higher score does not automatically mean the dataset is statistically or semantically better.
+Design consideration: Future versions should combine multiple quality dimensions rather than relying on row retention alone.
+Design Choice — Separate Planning from Execution
+The Planning Agent decides what should happen, while the Cleaning Agent decides how to execute the selected operations.
+This separation makes the workflow easier to extend because new cleaning strategies can be added without redesigning the entire orchestration layer.
+
+11. Current State & What's Next
+Live today
+CSV ingestion
+Excel ingestion
+SQLite database ingestion
+Profiling Agent
+LLM-powered Planning Agent
+Cleaning Agent
+Validation Agent
+Report Agent
+LangGraph orchestration
+Missing value handling
+Duplicate removal
+Outlier handling
+Category standardization
+JSON and CSV quality reports
+Not built yet
+FastAPI deployment
+Streamlit interface
+PostgreSQL production integration
+Docker deployment
+Human approval workflow
+More advanced LLM-based category normalization
+Persistent production monitoring
+Next build
+The next evolution would be to turn the pipeline into a usable data-quality product with an API and UI, while adding human review for cleaning operations that could remove or materially alter data.
+
+12. What Makes the Project Interesting
+The core idea is simple:
+Don't just clean the data.
+
+Let the system first understand the data,
+decide what needs to be cleaned,
+execute the decision,
+and then verify the result.
+
+That turns a traditional preprocessing script into an agentic data-quality workflow.
+
