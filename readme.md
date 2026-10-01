@@ -1,4 +1,4 @@
-Github link : https://github.com/roomslabdesigns-collab/agentic-data-cleaning-pipeline
+
 Agentic AI Data Quality Platform
 What if cleaning a dataset wasn't a collection of preprocessing rules, but a system that could decide what the dataset needed?
 The Agentic AI Data Quality Platform is a multi-agent data cleaning system built to automate the journey from raw structured data to a validated, report-ready dataset. Instead of applying the same cleaning rules to every dataset, the system profiles the data first, uses an LLM-powered Planning Agent to decide which cleaning actions are needed, executes those decisions through a Cleaning Agent, validates the result, and generates a quality report.
